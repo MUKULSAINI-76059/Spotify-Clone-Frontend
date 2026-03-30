@@ -18,7 +18,7 @@ export default function Register() {
     setErrMsg("");
     try {
       await register({ username, email, password, role });
-      navigate("/login");
+      navigate("/");
     } catch (err: any) {
       setErrMsg(err.message);
     }

@@ -25,6 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem("spotify_user");
     return saved ? JSON.parse(saved) : null;
   });
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem("spotify_token");
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,8 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await authApi.login(credentials);
       const userData = res.data.user;
+      const token = res.data.token;
       setUser(userData);
+      setToken(token);
       localStorage.setItem("spotify_user", JSON.stringify(userData));
+      localStorage.setItem("spotify_token", token);
     } catch (err: any) {
       const msg = err.response?.data?.message || err.response?.data || "Login failed";
       setError(msg);
@@ -49,7 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      await authApi.register(data);
+      const res = await authApi.register(data);
+      const userData = res.data.user;
+      const token = res.data.token;
+      setUser(userData);
+      setToken(token);
+      localStorage.setItem("spotify_user", JSON.stringify(userData));
+      localStorage.setItem("spotify_token", token);
     } catch (err: any) {
       const msg = err.response?.data?.message || err.response?.data || (err.code === "ERR_NETWORK" ? "Backend server not reachable. Make sure your backend is running on port 2545 with CORS enabled." : "Registration failed");
       setError(typeof msg === "string" ? msg : JSON.stringify(msg));
@@ -66,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore
     }
     setUser(null);
+    setToken(null);
     localStorage.removeItem("spotify_user");
+    localStorage.removeItem("spotify_token");
   }, []);
 
   return (
